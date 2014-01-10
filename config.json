@@ -1,0 +1,17 @@
+{
+  "mysql": {
+    "host": "dbhost",
+    "post": "port",
+    "user": "username",
+    "password": "password",
+    "database": "dbname"
+  },
+  "web": {
+    "port": "3001",
+    "folders": {
+      "layouts": "",
+      "partials": "",
+      "static": ""
+    }
+  }
+}
