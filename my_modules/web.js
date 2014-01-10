@@ -5,6 +5,7 @@ var events = require('events'),
   db = require('./db.js');
 
 var Web = function(config, rootDir) {
+  if(!(this instanceof Web)) return new Web(config, rootDir);
   var self = this;
   
   var app = express(),
