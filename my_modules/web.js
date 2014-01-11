@@ -27,7 +27,9 @@ var Web = function(config, rootDir) {
   });
   
   app.get('/', function (req, res) {
-    res.render('index');
+    res.render('index', {
+      sc_client_id: config.web.sc_client_id
+    });
   }); 
 
   this.startServer = function() {
