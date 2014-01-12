@@ -3,27 +3,68 @@ var scLinks = [
   'https://soundcloud.com/zimmermusic/moullinex-to-be-clear',
   'https://soundcloud.com/isaac-tichauer/angie-stone-i-wish-i-didnt-2'
 ];
-var scIndex = 0, scSound = null;
-var ytLinks = [
+var scIndex = 0, scSound = null, scTitle = '';
+/*var ytLinks = [
   'http://www.youtube.com/watch?v=Ir-mZaTAxRU',
   'http://www.youtube.com/watch?v=34OLu1BT0NE',
   'http://www.youtube.com/watch?v=OIiXy98AZ4M'
 ];
-
+var ytIndex = 0, ytPlayer = null;*/
+var client_id, audio5js, player, paused = false;
 $( document ).ready(function() {
+  client_id = $('#sc_client_id').val();
   SC.initialize({
-    client_id: $('#sc_client_id').val()
+    client_id: client_id
   });
 
-  soundManager.setup({
-    url: '//cdn.jsdelivr.net/soundmanager2/2.97a.20130512/',
-    onready: function() {
+  audio5js = new Audio5js({
+    swf_path: 'audio5js.swf',
+    throw_errors: true,
+    ready: function() {
       $('#sm_status').html('Ready');
+      player = this;
+
+      player.on('canplay', function() {
+        $('#sc_title').html(scTitle);
+        player.play();
+      });
+      this.on('play', function () {
+        console.log('play');
+        paused = false;
+      }, this);
+      this.on('pause', function () {
+        console.log('pause');
+        paused = true;
+      }, this);
+      this.on('ended', function () {
+        console.log('ended');
+        paused = false;
+      }, this);
+
+      // timeupdate event passes audio
+      // duration and position to callback
+      this.on('timeupdate', function (position, duration) {
+        console.log(duration, position);
+      }, this);
+
+      // progress event passes load_percent to callback
+      this.on('progress', function (load_percent) {
+        console.log(load_percent);
+      }, this);
+
+      //error event passes error object to callback
+      this.on('error', function (error) {
+        console.log(error.message);
+      }, this);
     }
-  });
+  })
 
   $('#sc_start').click(function() {
-    playSCLink(scLinks[scIndex]);
+    if (paused) {
+      player.play();
+    } else {
+      playSCLink(scLinks[scIndex]);
+    }
   });
 
   $('#sc_stop').click(function() {
@@ -35,48 +76,82 @@ $( document ).ready(function() {
     stopSC();
     playSCLink(scLinks[scIndex]);
   });
+
+  /*$('#yt_start').click(function() {
+    playYTLink(ytLinks[ytIndex]);
+  });
+
+  $('#yt_stop').click(function() {
+    stopYT();
+  });
+
+  $('#yt_next').click(function() {
+    ytIndex = ytIndex === (ytLinks.length - 1) ? 0 : (ytIndex + 1);
+    playYTLink(ytLinks[ytIndex]);
+  });*/
 });
 
 var stopSC = function() {
-  if (scSound !== null) {
-    scSound.stop();
-    scSound = null;
+  if (player.playing) {
+    player.pause();
   }
 };
 
 var playSCLink = function(url) {
-  resolveSCLink(url, function(link) {
-    SC.stream(link, {
-      autoPlay: true,
-      stream: true,
-      volume: 100,
-      onfinish: function() {
-        $('#sc_title').html('Nothing');
-      },
-      onstop: function() {
-        $('#sc_title').html('Nothing');
-      }
-    }, function(sound) {
-      scSound = sound;
-      console.log('Playing song');
-    });
+  resolveSCLink(url, function(stream_url) {
+    if (player.playing) {
+      player.pause();
+    }
+    player.load(stream_url);
   });
 };
 
 var resolveSCLink = function(url, callback) {
   console.log('Resolving url: ' + url);
-  $.ajax({
-    url: 'http://api.soundcloud.com/resolve.json',
-    type: 'GET',
-    dataType: 'JSON',
-    data: {
-      url: url,
-      client_id: $('#sc_client_id').val()
-    },
-    success: function (response) {
-      console.log('Resolved url to: ' + response.stream_url);
-      $('#sc_title').html(response.title);
-      callback(response.stream_url);
-    }
+  $('#sc_title').html('Resolving url: ' + url);
+  SC.get('/resolve', { url: url }, function(track) {
+    console.log('Resolved url to: ' + track.stream_url);
+    scTitle = track.title;
+    $('#sc_title').html('(Starting...) ' + scTitle);
+    callback(track.stream_url + '?client_id=' + client_id);
   });
 };
+
+/*var tag = document.createElement('script');
+
+tag.src = "https://www.youtube.com/iframe_api";
+var firstScriptTag = document.getElementsByTagName('script')[0];
+firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
+
+function onYouTubeIframeAPIReady() {
+
+}
+
+var playYTLink = function(url) {
+  var vidId = url.split('v=')[1];
+  if (ytPlayer === null) {
+    ytPlayer = new YT.Player('yt_player', {
+      height: '35',
+      width: '300',
+      videoId: vidId,
+      events: {
+        'onReady': function(event) {
+          //event.target.playVideo();
+        },
+        'onStateChange': function(event) {
+          if (event.data == YT.PlayerState.PLAYING) {
+            
+          }
+        }
+      }
+    });
+  } else {
+    ytPlayer.loadVideoById({ videoId: vidId });
+  }  
+}
+
+var stopYT = function() {
+  if (ytPlayer !== null) {
+    ytPlayer.stopVideo();
+  }
+};*/
