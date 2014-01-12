@@ -1,0 +1,14 @@
+{{#if artists.length}}
+  <div class="panel-group" id="artistAccordion">
+  {{#each artists}}
+    {{> artist this}}
+  {{/each}}
+  </div>
+  <script>
+    $('#artistAccordion').collapse({
+      toggle: false
+    });
+  </script>
+{{else}}
+<h3>No Artists Loaded</h3>
+{{/if}}
