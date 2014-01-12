@@ -1,0 +1,126 @@
+<h2>Audio Player: <span id="sm_status">Not Ready</span></h2>
+<div>
+  <h3>SC Playing: <span id="sc_title">Nothing</span></h3>
+  <h4>Progress: <span id="sc_progress"></span>, Duration: <span id="sc_duration"></span></h4>
+  <button class="btn btn-success" id="sc_start">Start SC</button>
+  <button class="btn btn-danger" id="sc_stop">Stop SC</button>
+  <button class="btn btn-info" id="sc_next">Next</button>
+</div>
+<script>
+var scLinks = [
+  {
+    link: 'https://soundcloud.com/flightfacilities/flight-facilities-clair-de-1',
+    stream_url: 'https://api.soundcloud.com/tracks/66170642/stream'
+  },
+  {
+    link: 'https://soundcloud.com/zimmermusic/moullinex-to-be-clear',
+    stream_url: 'http://api.soundcloud.com/tracks/128814038/stream'
+  },
+  {
+    link: 'https://soundcloud.com/isaac-tichauer/angie-stone-i-wish-i-didnt-2',
+    stream_url: 'http://api.soundcloud.com/tracks/126491034/stream'
+  }
+];
+var scIndex = 0, scSound = null, scTitle = '';
+var client_id, audio5js, player, paused = false;
+$( document ).ready(function() {
+  client_id = $('#sc_client_id').val();
+  SC.initialize({
+    client_id: client_id
+  });
+
+  audio5js = new Audio5js({
+    swf_path: 'audio5js.swf',
+    throw_errors: true,
+    ready: function() {
+      $('#sm_status').html('Ready');
+      player = this;
+
+      this.on('canplay', function() {
+        $('#sm_status').html('Can play');  
+        player.play();
+      }, this);
+
+      this.on('play', function () {
+        $('#sm_status').html('Playing');  
+        console.log('play');
+        paused = false;
+        $('#sc_title').html(scTitle);
+      }, this);
+
+      this.on('pause', function () {
+        console.log('pause');
+        paused = true;
+        $('#sc_title').html('(Paused...) ' + scTitle);
+      }, this);
+      this.on('ended', function () {
+        console.log('ended');
+        paused = false;
+        $('#sc_title').html('Stopped');
+      }, this);
+
+      // timeupdate event passes audio
+      // duration and position to callback
+      this.on('timeupdate', function (position, duration) {
+        console.log(duration, position);
+      }, this);
+
+      // progress event passes load_percent to callback
+      this.on('progress', function (load_percent) {
+        console.log(load_percent);
+      }, this);
+
+      //error event passes error object to callback
+      this.on('error', function (error) {
+        console.log(error.message);
+      }, this);
+    }
+  })
+
+  $('#sc_start').click(function() {
+    if (paused) {
+      player.play();
+    } else {
+      playSCLink(scLinks[scIndex]);
+    }
+  });
+
+  $('#sc_stop').click(function() {
+    stopSC();
+  });
+
+  $('#sc_next').click(function() {
+    scIndex = scIndex === (scLinks.length - 1) ? 0 : (scIndex + 1);
+    stopSC();
+    playSCLink(scLinks[scIndex]);
+  });
+});
+
+var stopSC = function() {
+  if (player.playing) {
+    player.pause();
+  }
+};
+
+var playSCLink = function(url) {
+  resolveSCLink(url, function(stream_url) {
+    if (player.playing) {
+      player.pause();
+    }
+    $('#sm_status').html('About to play ' + stream_url);  
+    player.load(stream_url);
+  });
+};
+
+var resolveSCLink = function(url, callback) {
+  var l = url.link;
+  console.log('Resolving url: ' + l);
+  $('#sc_title').html('Resolving url: ' + l);
+  SC.get('/resolve', { url: l }, function(track) {
+    console.log('Resolved url to: ' + track.stream_url);
+    scTitle = track.title;
+    $('#sm_status').html(track.stream_url);
+    callback(track.stream_url + '?client_id=' + client_id);
+  });
+};
+</script>

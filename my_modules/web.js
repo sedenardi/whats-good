@@ -31,6 +31,12 @@ var Web = function(config, rootDir) {
       sc_client_id: config.web.sc_client_id
     });
   }); 
+  
+  app.get('/test', function (req, res) {
+    res.render('test', {
+      sc_client_id: config.web.sc_client_id
+    });
+  }); 
 
   this.startServer = function() {
     db.connect(config, 'WEB', function webDB() {
