@@ -8,7 +8,12 @@
   </div>
   <div id="collapse{{artistId}}" class="panel-collapse collapse">
     <div class="panel-body">
-      ArtistID: {{artistId}}
+      <div class="input-group">
+        <input type="url" class="form-control artistLinkInput" placeholder="Paste SoundCloud Link" artistId="{{artistId}}">
+        <span class="input-group-btn">
+          <button class="btnArtistLinkInput btn btn-mini btn-default" type="button" artistId="{{artistId}}">Add</button>
+        </span>
+      </div>
     </div>
   </div>
 </div>

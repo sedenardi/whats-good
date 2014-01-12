@@ -9,7 +9,8 @@ var Web = function(config, rootDir) {
   var self = this;
   
   var app = express(),
-    hbs = new hbars(rootDir, config);
+    hbs = new hbars(rootDir, config),
+    SC = require('./sc.js')(config.web.sc_client_id);
 
   app.engine('handlebars', hbs.hbs.engine);
 
@@ -47,6 +48,22 @@ var Web = function(config, rootDir) {
       sc_client_id: config.web.sc_client_id
     });
   }); 
+
+  app.post('/AddLink', function(req, res) {
+    if (typeof req.body.link !== 'undefined' && typeof req.body.artistId !== 'undefined') {
+      SC.resolve(req.body.link, function(obj) {
+        db.query({
+          sql: 'Insert into tracks(artistId,title,url,raw) Values (?,?,?,?);',
+          inserts: [req.body.artistId,obj.title,obj.stream_url,JSON.stringify(obj)]
+        }, function(err, dbRes) {
+          if (err) {
+            console.log(err);
+          }
+          res.end();
+        });
+      });
+    }
+  });
 
   this.startServer = function() {
     db.connect(config, 'WEB', function webDB() {

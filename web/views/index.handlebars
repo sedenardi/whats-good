@@ -8,6 +8,21 @@
     $('#artistAccordion').collapse({
       toggle: false
     });
+
+    $('.btnArtistLinkInput').click(function() {
+      var artistId = $(this).attr('artistId');
+      $.ajax({
+        url: '/AddLink',
+        type: 'POST',
+        data: {
+          link: $('.artistLinkInput[artistId="' + artistId + '"]').val(),
+          artistId: artistId
+        },
+        success: function (response) {
+          
+        }
+      });
+    });
   </script>
 {{else}}
 <h3>No Artists Loaded</h3>

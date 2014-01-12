@@ -12,7 +12,8 @@
     "mysql": "*",
     "express": "*",
     "express3-handlebars": "*",
-    "handlebars": "*"
+    "handlebars": "*",
+    "request": "*"
   },
   "engines": {
     "node": ">=0.10"
