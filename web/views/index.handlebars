@@ -1,12 +1,16 @@
 {{#if artists.length}}
-  <div class="panel-group" id="artistAccordion">
+  <div class="panel-group" id="artistGroup">
   {{#each artists}}
     {{> artist this}}
   {{/each}}
   </div>
   <script>
-    $('#artistAccordion').collapse({
+    $('#artistGroup').collapse({
       toggle: false
+    });
+
+    $('#artistGroup').on('show.bs.collapse', function (e) {
+      console.log(e);
     });
 
     $('.btnArtistLinkInput').click(function() {
